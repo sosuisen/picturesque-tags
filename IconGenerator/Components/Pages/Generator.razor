@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 
 @using Svg
+@using Svg.Pathing
 @using System.Drawing
 
 <PageTitle>Icon Generator</PageTitle>
@@ -11,11 +12,12 @@
 <button class="btn btn-primary" @onclick="Generate">Generate icon</button>
 
 <div>
-@foreach(var icon in iconList) {
-    <div style="width: @(width)px; height: @(height)px; float: left; ">
-        @((MarkupString)icon)
-    </div>
-}
+    @foreach (var icon in iconList)
+    {
+        <div style="width: @(width)px; height: @(height)px; float: left; ">
+            @((MarkupString)icon)
+        </div>
+    }
 </div>
 
 @code {
@@ -35,30 +37,85 @@
         return Color.FromArgb(a, r, g, b);
     }
 
-    private void Generate(){
+    private void Generate()
+    {
         iconList.Add(GenerateIcon());
     }
 
     private string GenerateIcon()
     {
         var embeddedSvg = "";
+
+        // https://github.com/svg-net/SVG
         var svgDoc = new SvgDocument
             {
                 Width = width,
                 Height = height,
-                ViewBox = new SvgViewBox(-width/2, -height/2, width, height),
+                ViewBox = new SvgViewBox(-width / 2, -height / 2, width, height),
             };
 
         var group = new SvgGroup();
         svgDoc.Children.Add(group);
 
+        Random random = new Random();
+        var bgRadius = random.Next(width / 3, width * 3 / 7);
+        var centerX = (width - bgRadius) / 4 - random.Next(0, (width - bgRadius) / 2);
+        var centerY = (height - bgRadius) / 4 - random.Next(0, (height - bgRadius) / 2);
         group.Children.Add(new SvgCircle
             {
-                Radius = 100,
+                Radius = bgRadius,
+                CenterX = centerX,
+                CenterY = centerY,
                 Fill = new SvgColourServer(GenerateRandomPastelColor()),
-                Stroke = new SvgColourServer(GenerateRandomPastelColor()),
-                StrokeWidth = 7
+                // Stroke = new SvgColourServer(GenerateRandomPastelColor()),
+                // StrokeWidth = 7
             });
+
+        // 円の半径（r）
+        // 円の中心のX座標（cx）
+        // 円の中心のY座標（cy）
+        // 円周上の任意の点から開始して、4つのBézier曲線セグメントを使用して円を描きます。
+        // 円の各四半分のために、制御点は半径の約0.552284749831
+        // （これは、円を近似するための正確な制御点を得るための値です）倍離れた位置に配置されます。
+        var svgPath = new SvgPath();
+        group.Children.Add(svgPath);
+        svgPath.Stroke = new SvgColourServer(System.Drawing.Color.Black);
+        svgPath.StrokeWidth = 5;
+        svgPath.Fill = SvgPaintServer.None;
+
+        float cx = 0;
+        float cy = 0;
+        float r = width /2 * random.Next(70, 90) / 100;
+        // 中心基準点のゆらぎ        
+        float cx1 = random.Next(0, (int)(width/2 - r));
+        float cy1 = random.Next(0, (int)(width/2 - r));        
+        float cx2 = random.Next(0, (int)(width/2 - r));
+        float cy2 = random.Next(0, (int)(width/2 - r));        
+        float cx3 = random.Next(0, (int)(width/2 - r));
+        float cy3 = random.Next(0, (int)(width/2 - r));        
+        float cx4 = random.Next(0, (int)(width/2 - r));
+        float cy4 = random.Next(0, (int)(width/2 - r));        
+
+        // ハンドルの長さ
+        float baseHandleLength = 0.552284749831f * r;
+        float c1 = baseHandleLength * random.Next(70, 90) / 100;
+        float c2 = baseHandleLength * random.Next(70, 90) / 100;
+        float c3 = baseHandleLength * random.Next(70, 90) / 100;
+        float c4 = baseHandleLength * random.Next(70, 90) / 100;
+        float c5 = baseHandleLength * random.Next(70, 90) / 100;
+        float c6 = baseHandleLength * random.Next(70, 90) / 100;
+        float c7 = baseHandleLength * random.Next(70, 90) / 100;
+        float c8 = baseHandleLength * random.Next(70, 90) / 100;
+
+        // パスセグメントを追加（円を描くためのBézier曲線セグメント）
+        svgPath.PathData = new SvgPathSegmentList {
+new SvgMoveToSegment(false, new PointF(cx1, cy1 - r)),
+new SvgCubicCurveSegment(false, new PointF(cx1 + c1, cy1 - r), new PointF(cx2 + r, cy2 - c2), new PointF(cx2 + r, cy2)),
+new SvgCubicCurveSegment(false, new PointF(cx2 + r, cy2 + c3), new PointF(cx3 + c4, cy3 + r), new PointF(cx3, cy3 + r)),
+new SvgCubicCurveSegment(false, new PointF(cx3 - c5, cy3 + r), new PointF(cx4 - r, cy4 + c6), new PointF(cx4 - r, cy4)),
+new SvgCubicCurveSegment(false, new PointF(cx4 - r, cy4 - c7), new PointF(cx1 - c1, cy1 - r), new PointF(cx1, cy1 - r)),
+new SvgClosePathSegment(false)
+};
 
         using (var stream = new MemoryStream())
         {
