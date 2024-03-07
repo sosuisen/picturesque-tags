@@ -86,8 +86,8 @@
 
         Random random = new Random();
         var bgRadius = random.Next(width / 3, width * 3 / 7);
-        var centerX = (width - bgRadius) / 4 - random.Next(0, (width - bgRadius) / 2);
-        var centerY = (height - bgRadius) / 4 - random.Next(0, (height - bgRadius) / 2);
+        var centerX = (width / 2 - bgRadius) / 2 - random.Next(0, (width / 2 - bgRadius));
+        var centerY = (height / 2 - bgRadius) / 2 - random.Next(0, (height / 2- bgRadius));
         group.Children.Add(new SvgCircle
             {
                 Radius = bgRadius,
