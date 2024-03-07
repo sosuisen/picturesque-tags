@@ -48,6 +48,7 @@
         var embeddedSvg = "";
 
         // https://github.com/svg-net/SVG
+        // https://svg-net.github.io/SVG/api/Svg.html
         var svgDoc = new SvgDocument
             {
                 Width = width,
@@ -58,6 +59,31 @@
         var group = new SvgGroup();
         svgDoc.Children.Add(group);
 
+        // 斜線パターンを作成
+        // 左上から右下への斜線
+        var downwardDiagonalPattern = new SvgPatternServer
+            {
+                ID = "pat" + Guid.NewGuid(), // 固有のIDが必須なので注意
+                Width = 10,
+                Height = 10,
+                PatternUnits = SvgCoordinateUnits.UserSpaceOnUse
+            };
+        // 斜線を描くための線をパターンに追加
+        var line = new SvgLine
+            {
+                StartX = 0,
+                StartY = 0,
+                EndX = 10,
+                EndY = 10,
+                // Stroke = new SvgColourServer(System.Drawing.Color.Black),
+                Stroke = new SvgColourServer(GenerateRandomPastelColor()),
+                Fill = new SvgColourServer(GenerateRandomPastelColor()),
+                StrokeWidth = 3
+            };
+        downwardDiagonalPattern.Children.Add(line);
+        // パターンを利用するにはSVGドキュメントへ追加する必要がある
+        svgDoc.Children.Add(downwardDiagonalPattern);
+
         Random random = new Random();
         var bgRadius = random.Next(width / 3, width * 3 / 7);
         var centerX = (width - bgRadius) / 4 - random.Next(0, (width - bgRadius) / 2);
@@ -67,7 +93,8 @@
                 Radius = bgRadius,
                 CenterX = centerX,
                 CenterY = centerY,
-                Fill = new SvgColourServer(GenerateRandomPastelColor()),
+                // Fill = new SvgColourServer(GenerateRandomPastelColor()),
+                Fill = downwardDiagonalPattern
                 // Stroke = new SvgColourServer(GenerateRandomPastelColor()),
                 // StrokeWidth = 7
             });
@@ -86,16 +113,16 @@
 
         float cx = 0;
         float cy = 0;
-        float r = width /2 * random.Next(70, 90) / 100;
-        // 中心基準点のゆらぎ        
-        float cx1 = random.Next(0, (int)(width/2 - r));
-        float cy1 = random.Next(0, (int)(width/2 - r));        
-        float cx2 = random.Next(0, (int)(width/2 - r));
-        float cy2 = random.Next(0, (int)(width/2 - r));        
-        float cx3 = random.Next(0, (int)(width/2 - r));
-        float cy3 = random.Next(0, (int)(width/2 - r));        
-        float cx4 = random.Next(0, (int)(width/2 - r));
-        float cy4 = random.Next(0, (int)(width/2 - r));        
+        float r = width / 2 * random.Next(70, 90) / 100;
+        // 中心基準点のゆらぎ
+        float cx1 = random.Next(0, (int)(width / 2 - r));
+        float cy1 = random.Next(0, (int)(width / 2 - r));
+        float cx2 = random.Next(0, (int)(width / 2 - r));
+        float cy2 = random.Next(0, (int)(width / 2 - r));
+        float cx3 = random.Next(0, (int)(width / 2 - r));
+        float cy3 = random.Next(0, (int)(width / 2 - r));
+        float cx4 = random.Next(0, (int)(width / 2 - r));
+        float cy4 = random.Next(0, (int)(width / 2 - r));
 
         // ハンドルの長さ
         float baseHandleLength = 0.552284749831f * r;
