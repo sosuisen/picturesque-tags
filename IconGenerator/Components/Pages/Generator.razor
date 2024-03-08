@@ -28,12 +28,20 @@
 
     private void Generate()
     {
-        iconList.Add(GenerateIcon());
+        string[] tags = new string[] { 
+            "apple", "banana", "cherry", "date", "elderberry", "fig", "grape", "honeydew", "kiwi", "lemon", "mango", "nectarine", "orange", "pear", "quince", "raspberry", "strawberry", "tangerine", "ugli", "vanilla", "watermelon", "xigua", "yuzu", "zucchini"  
+            };
+        foreach (var tag in tags) {
+            iconList.Add(GenerateIcon(tag));
+        }
     }
 
-    private string GenerateIcon()
+    private string GenerateIcon(string tag)
     {
-        var gen = new SvgGenerator(width, height);
-        return gen.GenerateSvg();
+        var builder = new IconBuilder(width, height);
+        
+        return builder.addBackground(HatchPattern.GenerateHatchPatternFromText(tag))
+            .addForeground()
+            .toSvg();
     }
 }

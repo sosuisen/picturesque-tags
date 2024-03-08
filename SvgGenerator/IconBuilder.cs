@@ -3,10 +3,32 @@ using Svg;
 using Svg.Pathing;
 using System.Drawing;
 
-public class SvgGenerator(int width, int height)
+public class IconBuilder
 {
-    public int Width { get; } = width;
-    public int Height { get; } = height;
+    public int Width { get; }
+    public int Height { get; }
+    private SvgDocument _svgDoc;
+    private SvgGroup _bgGroup;
+    private SvgGroup _fgGroup;
+
+    public IconBuilder(int width, int height) {
+        Width = width;
+        Height = height;
+
+        // https://github.com/svg-net/SVG
+        // https://svg-net.github.io/SVG/api/Svg.html
+        _svgDoc = new SvgDocument
+        {
+            Width = Width,
+            Height = Height,
+            ViewBox = new SvgViewBox(-Width / 2, -Height / 2, Width, Height),
+        };
+
+        _bgGroup = new SvgGroup();
+        _svgDoc.Children.Add(_bgGroup);
+        _fgGroup = new SvgGroup();
+        _svgDoc.Children.Add(_fgGroup);
+    }
 
     private Color GenerateRandomPastelColor()
     {
@@ -20,62 +42,41 @@ public class SvgGenerator(int width, int height)
         return Color.FromArgb(a, r, g, b);
     }
 
-    public string GenerateSvg()
+    public IconBuilder addBackground(HatchPatternType type)
     {
-
-        var embeddedSvg = "";
-
-        // https://github.com/svg-net/SVG
-        // https://svg-net.github.io/SVG/api/Svg.html
-        var svgDoc = new SvgDocument
-        {
-            Width = Width,
-            Height = Height,
-            ViewBox = new SvgViewBox(-Width / 2, -Height / 2, Width, Height),
-        };
-
-        var group = new SvgGroup();
-        svgDoc.Children.Add(group);
-
-        // 斜線パターンを作成
-        // 左上から右下への斜線
-        var downwardDiagonalPattern = new SvgPatternServer
-        {
-            ID = "pat" + Guid.NewGuid(), // 固有のIDが必須なので注意
-            Width = 10,
-            Height = 10,
-            PatternUnits = SvgCoordinateUnits.UserSpaceOnUse
-        };
-        // 斜線を描くための線をパターンに追加
-        var line = new SvgLine
-        {
-            StartX = 0,
-            StartY = 0,
-            EndX = 10,
-            EndY = 10,
-            // Stroke = new SvgColourServer(System.Drawing.Color.Black),
-            Stroke = new SvgColourServer(GenerateRandomPastelColor()),
-            Fill = new SvgColourServer(GenerateRandomPastelColor()),
-            StrokeWidth = 3
-        };
-        downwardDiagonalPattern.Children.Add(line);
         // パターンを利用するにはSVGドキュメントへ追加する必要がある
-        svgDoc.Children.Add(downwardDiagonalPattern);
+        // switch式。便利。
+        var col = GenerateRandomPastelColor();
+        var pattern = type switch {
+            HatchPatternType.DownwardDiagonal => HatchPattern.DownwardDiagonalPattern(col),
+            HatchPatternType.UpwardDiagonal => HatchPattern.UpwardDiagonalPattern(col),
+            HatchPatternType.Horizontal => HatchPattern.HorizontalPattern(col),
+            HatchPatternType.Vertical => HatchPattern.VerticalPattern(col),
+            HatchPatternType.Cross => HatchPattern.CrossPattern(col),
+            HatchPatternType.DiagonalCross => HatchPattern.DiagonalCrossPattern(col),
+            _ => new SvgPatternServer()
+        };
+        _svgDoc.Children.Add(pattern);
 
         Random random = new Random();
         var bgRadius = random.Next(Width / 3, Width * 3 / 7);
         var centerX = (Width / 2 - bgRadius) / 2 - random.Next(0, (Width / 2 - bgRadius));
         var centerY = (Height / 2 - bgRadius) / 2 - random.Next(0, (Height / 2 - bgRadius));
-        group.Children.Add(new SvgCircle
+        _bgGroup.Children.Add(new SvgCircle
         {
             Radius = bgRadius,
             CenterX = centerX,
             CenterY = centerY,
             // Fill = new SvgColourServer(GenerateRandomPastelColor()),
-            Fill = downwardDiagonalPattern
+            Fill = pattern
             // Stroke = new SvgColourServer(GenerateRandomPastelColor()),
             // StrokeWidth = 7
         });
+
+        return this;
+    }
+
+    public IconBuilder addForeground() {
 
         // 円の半径（r）
         // 円の中心のX座標（cx）
@@ -84,13 +85,13 @@ public class SvgGenerator(int width, int height)
         // 円の各四半分のために、制御点は半径の約0.552284749831
         // （これは、円を近似するための正確な制御点を得るための値です）倍離れた位置に配置されます。
         var svgPath = new SvgPath();
-        group.Children.Add(svgPath);
+        _fgGroup.Children.Add(svgPath);
         svgPath.Stroke = new SvgColourServer(System.Drawing.Color.Black);
         svgPath.StrokeWidth = 5;
         svgPath.Fill = SvgPaintServer.None;
 
-        float cx = 0;
-        float cy = 0;
+        Random random = new Random();
+
         float r = Width / 2 * random.Next(70, 90) / 100;
         // 中心基準点のゆらぎ
         float cx1 = random.Next(0, (int)(Width / 2 - r));
@@ -122,10 +123,14 @@ new SvgCubicCurveSegment(false, new PointF(cx3 - c5, cy3 + r), new PointF(cx4 - 
 new SvgCubicCurveSegment(false, new PointF(cx4 - r, cy4 - c7), new PointF(cx1 - c1, cy1 - r), new PointF(cx1, cy1 - r)),
 new SvgClosePathSegment(false)
 };
+return this;
+    }
 
+    public string toSvg() {
+        var embeddedSvg = "";
         using (var stream = new MemoryStream())
         {
-            svgDoc.Write(stream);
+            _svgDoc.Write(stream);
             embeddedSvg = System.Text.Encoding.UTF8.GetString(stream.GetBuffer());
         }
         return embeddedSvg;
