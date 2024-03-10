@@ -12,7 +12,8 @@ public enum HatchPatternType {
     Horizontal,
     Vertical,
     Cross,
-    DiagonalCross
+    DiagonalCross,
+    None,
 }
 
 public class HatchPattern
@@ -27,7 +28,8 @@ public class HatchPattern
             // ハッシュ値の先頭4バイトをintに変換
             hash = BitConverter.ToUInt32(hashBytes, 0);
         }
-        return (HatchPatternType)(hash % 6);
+        // 最後のNoneを除外するため-1
+        return (HatchPatternType)(hash % Enum.GetNames(typeof(HatchPatternType)).Length-1);
     }
 
     public static SvgPatternServer DownwardDiagonalPattern(Color color)

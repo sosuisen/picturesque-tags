@@ -1,7 +1,10 @@
 ﻿namespace SvgGenerator;
+
 using Svg;
 using Svg.Pathing;
 using System.Drawing;
+using System.Security.Cryptography;
+using System.Text;
 
 public class IconBuilder
 {
@@ -11,7 +14,10 @@ public class IconBuilder
     private SvgGroup _bgGroup;
     private SvgGroup _fgGroup;
 
-    public IconBuilder(int width, int height) {
+
+
+    public IconBuilder(int width, int height)
+    {
         Width = width;
         Height = height;
 
@@ -42,12 +48,68 @@ public class IconBuilder
         return Color.FromArgb(a, r, g, b);
     }
 
+    public IconBuilder generateBgFromText(string tag) {
+        var mainColor = Color.Black;
+        var subColor1 = Color.Black;
+        var subColor2 = Color.Black;
+        var hatchPattern = HatchPatternType.None;
+
+        if (tag.Length == 0) return Default();
+
+        var defaultOffset = Width / 10;
+        if (tag.Length >= 5) {
+            var char5_6 = tag.Substring(4, 2);
+            byte[] hashBytes;
+            using (MD5 md5 = MD5.Create())
+            {
+                hashBytes = md5.ComputeHash(Encoding.UTF8.GetBytes(char5_6));
+            }
+            // 16バイトのハッシュ値の先頭4バイトをuintに変換
+            var colorHash = BitConverter.ToUInt32(hashBytes, 0);
+            subColor2 = Colors.GenerateColorFromHash(colorHash);
+            var geomHash = BitConverter.ToUInt32(hashBytes, 4);
+
+                        
+            var radius = Width / 3;
+            var centerX = Width - radius - defaultOffset;
+            var centerY = Height - radius - defaultOffset;
+            AddCircle(HatchPatternType.None, subColor2, radius, centerX, centerY);
+        }
+
+        if (tag.Length >= 3) {
+            var char3_4 = tag.Substring(2, 2);
+            subColor1 = Colors.GenerateColorFromText(char3_4);
+            var radius = Width / 3;
+            var centerX = radius + defaultOffset;
+            var centerY = radius + defaultOffset;
+            AddCircle(HatchPatternType.None, subColor1, radius, centerX, centerY);
+        }
+
+        if (tag.Length >= 3) {
+            var char3 = tag.Substring(2, 1);
+            hatchPattern = HatchPattern.GenerateHatchPatternFromText(char3);
+        }
+
+        if (tag.Length >= 1) {
+            // tagの２文字目までを切り出し
+            var char1_2 = tag.Substring(0, 2);
+            mainColor = Colors.GenerateColorFromText(char1_2);            
+        }
+        return Default();
+    }
+
     public IconBuilder addBackground(HatchPatternType type)
     {
-        // パターンを利用するにはSVGドキュメントへ追加する必要がある
-        // switch式。便利。
         var col = GenerateRandomPastelColor();
-        var pattern = type switch {
+        return addBackground(type, col);
+    }
+
+    public IconBuilder AddCircle(HatchPatternType hType, Color col, float radius, float centerX, float centerY)
+    {
+        // パターンを利用するにはSVGドキュメントへ追加する必要があるので注意
+        // switch式。便利。
+        var pattern = hType switch
+        {
             HatchPatternType.DownwardDiagonal => HatchPattern.DownwardDiagonalPattern(col),
             HatchPatternType.UpwardDiagonal => HatchPattern.UpwardDiagonalPattern(col),
             HatchPatternType.Horizontal => HatchPattern.HorizontalPattern(col),
@@ -56,7 +118,37 @@ public class IconBuilder
             HatchPatternType.DiagonalCross => HatchPattern.DiagonalCrossPattern(col),
             _ => new SvgPatternServer()
         };
-        _svgDoc.Children.Add(pattern);
+        if (hType != HatchPatternType.None)
+            _svgDoc.Children.Add(pattern);
+
+        _bgGroup.Children.Add(new SvgCircle
+        {
+            Radius = radius,
+            CenterX = centerX,
+            CenterY = centerY,
+            Fill = hType != HatchPatternType.None ? pattern : new SvgColourServer(col),
+        });
+
+        return this;
+    }
+
+    public IconBuilder addBackground(HatchPatternType type, Color col)
+    {
+        // パターンを利用するにはSVGドキュメントへ追加する必要がある
+        // switch式。便利。
+        var pattern = type switch
+        {
+            HatchPatternType.DownwardDiagonal => HatchPattern.DownwardDiagonalPattern(col),
+            HatchPatternType.UpwardDiagonal => HatchPattern.UpwardDiagonalPattern(col),
+            HatchPatternType.Horizontal => HatchPattern.HorizontalPattern(col),
+            HatchPatternType.Vertical => HatchPattern.VerticalPattern(col),
+            HatchPatternType.Cross => HatchPattern.CrossPattern(col),
+            HatchPatternType.DiagonalCross => HatchPattern.DiagonalCrossPattern(col),
+            _ => new SvgPatternServer()
+        };
+        if (type != HatchPatternType.None)
+            _svgDoc.Children.Add(pattern);
+
 
         Random random = new Random();
         var bgRadius = random.Next(Width / 3, Width * 3 / 7);
@@ -68,7 +160,7 @@ public class IconBuilder
             CenterX = centerX,
             CenterY = centerY,
             // Fill = new SvgColourServer(GenerateRandomPastelColor()),
-            Fill = pattern
+            Fill = type != HatchPatternType.None ? pattern : new SvgColourServer(col),
             // Stroke = new SvgColourServer(GenerateRandomPastelColor()),
             // StrokeWidth = 7
         });
@@ -76,7 +168,8 @@ public class IconBuilder
         return this;
     }
 
-    public IconBuilder addForeground() {
+    public IconBuilder addForeground()
+    {
 
         // 円の半径（r）
         // 円の中心のX座標（cx）
@@ -123,10 +216,19 @@ new SvgCubicCurveSegment(false, new PointF(cx3 - c5, cy3 + r), new PointF(cx4 - 
 new SvgCubicCurveSegment(false, new PointF(cx4 - r, cy4 - c7), new PointF(cx1 - c1, cy1 - r), new PointF(cx1, cy1 - r)),
 new SvgClosePathSegment(false)
 };
-return this;
+        return this;
     }
 
-    public string toSvg() {
+    public IconBuilder Default()
+    {
+        addBackground(HatchPatternType.None, Color.FromArgb(255, 128, 128, 128));
+        addForeground();
+        return this;
+    }
+
+
+    public string toSvg()
+    {
         var embeddedSvg = "";
         using (var stream = new MemoryStream())
         {
