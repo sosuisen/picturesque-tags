@@ -172,7 +172,7 @@ public class IconBuilder
         var mainGeom = Geometry.Dict[AreaName.BgMain][(GeometryType)mainGeometryTypeIndex];
 
         // HatchPatternTypeの決定
-        var mainHatchPatternType = (HatchPatternType)(hash2 % (Enum.GetNames(typeof(HatchPatternType)).Length));
+        var mainHatchPatternType = (HatchPatternType)(hash2 % Enum.GetNames(typeof(HatchPatternType)).Length);
 
         switch ((ShapeType)mainShapeTypeIndex)
         {
@@ -229,14 +229,16 @@ public class IconBuilder
         if (hType != HatchPatternType.Fill)
             _svgDoc.Children.Add(pattern);
 
-        _bgGroup.Children.Add(new SvgRectangle
+        _bgGroup.Children.Add(new SvgPolygon
         {
-            Width = (SvgUnit)(radius * 1.4),
-            Height = (SvgUnit)(radius * 1.4),
-            X = (SvgUnit)centerX,
-            Y = (SvgUnit)centerY,
+            Points = new SvgPointCollection
+            {
+                (SvgUnit)(centerX + radius), (SvgUnit)centerY,
+                (SvgUnit)centerX, (SvgUnit)(centerY + radius),
+                (SvgUnit)(centerX - radius), (SvgUnit)centerY,
+                (SvgUnit)centerX, (SvgUnit)(centerY - radius),
+            },
             Fill = hType != HatchPatternType.Fill ? pattern : new SvgColourServer(col),
-            Transforms = [new SvgRotate(-45, centerX, centerY)]
         });
 
         return this;
