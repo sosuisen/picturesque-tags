@@ -2,6 +2,7 @@
 
 using Svg;
 using Svg.Pathing;
+using Svg.Transforms;
 using System.Drawing;
 using System.Security.Cryptography;
 using System.Text;
@@ -48,121 +49,213 @@ public class IconBuilder
         return Color.FromArgb(a, r, g, b);
     }
 
-    public IconBuilder generateBgFromText(string tag) {
-        var mainColor = Color.Black;
-        var subColor1 = Color.Black;
-        var subColor2 = Color.Black;
-        var hatchPattern = HatchPatternType.None;
+    // 文字が表意文字 Ideogram であるかどうかを判定
+    private bool IsIdeogram(char c)
+    {
+        // ひらがなの範囲
+        var hiraganaRanges = new[] { (0x3040, 0x309F) };
+        // カタカナの範囲
+        var katakanaRanges = new[] { (0x30A0, 0x30FF), (0x31F0, 0x31FF) };
+        // 漢字の範囲（日本語及び中国語共通）
+        var kanjiRanges = new[] { (0x4E00, 0x9FFF), (0x3400, 0x4DBF), (0xF900, 0xFAFF) };
 
-        if (tag.Length == 0) return Default();
-
-        var defaultOffset = Width / 10;
-        if (tag.Length >= 5) {
-            var char5_6 = tag.Substring(4, 2);
-            byte[] hashBytes;
-            using (MD5 md5 = MD5.Create())
-            {
-                hashBytes = md5.ComputeHash(Encoding.UTF8.GetBytes(char5_6));
-            }
-            // 16バイトのハッシュ値の先頭4バイトをuintに変換
-            var colorHash = BitConverter.ToUInt32(hashBytes, 0);
-            subColor2 = Colors.GenerateColorFromHash(colorHash);
-            var geomHash = BitConverter.ToUInt32(hashBytes, 4);
-
-                        
-            var radius = Width / 3;
-            var centerX = Width - radius - defaultOffset;
-            var centerY = Height - radius - defaultOffset;
-            AddCircle(HatchPatternType.None, subColor2, radius, centerX, centerY);
+        // ひらがなか判定
+        if (hiraganaRanges.Any(range => c >= range.Item1 && c <= range.Item2))
+        {
+            return false;
         }
-
-        if (tag.Length >= 3) {
-            var char3_4 = tag.Substring(2, 2);
-            subColor1 = Colors.GenerateColorFromText(char3_4);
-            var radius = Width / 3;
-            var centerX = radius + defaultOffset;
-            var centerY = radius + defaultOffset;
-            AddCircle(HatchPatternType.None, subColor1, radius, centerX, centerY);
+        // カタカナか判定
+        else if (katakanaRanges.Any(range => c >= range.Item1 && c <= range.Item2))
+        {
+            return false;
         }
-
-        if (tag.Length >= 3) {
-            var char3 = tag.Substring(2, 1);
-            hatchPattern = HatchPattern.GenerateHatchPatternFromText(char3);
+        // 漢字か判定
+        else if (kanjiRanges.Any(range => c >= range.Item1 && c <= range.Item2))
+        {
+            return true;
         }
-
-        if (tag.Length >= 1) {
-            // tagの２文字目までを切り出し
-            var char1_2 = tag.Substring(0, 2);
-            mainColor = Colors.GenerateColorFromText(char1_2);            
+        // それ以外
+        else
+        {
+            return false;
         }
-        return Default();
     }
 
-    public IconBuilder addBackground(HatchPatternType type)
+    public IconBuilder generateBgFromText(string tag)
     {
-        var col = GenerateRandomPastelColor();
-        return addBackground(type, col);
+        char[] chars = tag.ToCharArray();
+        if (chars.Length == 0) return Default();
+
+        // tagを先頭から1文字ずつ読んで数を数える
+        var charCount = 0;
+        var block1 = "";
+        var block2 = "";
+        var block3 = "";
+        var block4 = "";
+
+        var tmpStr = "";
+        for (int i = 0; i < chars.Length; i++)
+        {
+            var c = chars[i];
+            if (IsIdeogram(c))
+            {
+                charCount += 2;
+            }
+            else
+            {
+                charCount += 1;
+            }
+            tmpStr += c;
+
+            if (block1 == "" && (charCount >= 4 || i == chars.Length - 1))
+            {
+                block1 = tmpStr;
+                tmpStr = "";
+                charCount = 0;
+            }
+            else if (block1 != "" && (charCount >= 3 || i == chars.Length - 1))
+            {
+                block2 = tmpStr;
+                tmpStr = "";
+                charCount = 0;
+            }
+            else if (block2 != "" && (charCount >= 3 || i == chars.Length - 1))
+            {
+                block3 = tmpStr;
+                tmpStr = "";
+                charCount = 0;
+            }
+            else if (block3 != "" && i == chars.Length - 1)
+            {
+                block4 = tmpStr;
+                tmpStr = "";
+                charCount = 0;
+            }
+        }
+
+        uint hash1, hash2, hash3, hash4;
+        using (MD5 md5 = MD5.Create())
+        {
+            byte[] hashBytes1 = md5.ComputeHash(Encoding.UTF8.GetBytes(block1));
+            byte[] hashBytes2 = md5.ComputeHash(Encoding.UTF8.GetBytes(block2));
+            byte[] hashBytes3 = md5.ComputeHash(Encoding.UTF8.GetBytes(block3));
+            byte[] hashBytes4 = md5.ComputeHash(Encoding.UTF8.GetBytes(block4));
+            // 16バイトのハッシュ値の先頭4バイトをuintに変換
+            hash1 = BitConverter.ToUInt32(hashBytes1, 0);
+            hash2 = BitConverter.ToUInt32(hashBytes2, 0);
+            hash3 = BitConverter.ToUInt32(hashBytes3, 0);
+            hash4 = BitConverter.ToUInt32(hashBytes4, 0);
+        }
+
+
+        // ColorName x ShapeType x GeometryType種類の組み合わせパターンについて
+        // hash1の値をもとに組に含まれる値を決定
+        // hash1の値をColorName x ShapeType x GeometryTypeの組み合わせ数に丸める。
+        // patterns1は0からColorName x ShapeType x GeometryType-1の値を取る
+        var patterns1 = hash1 % (Enum.GetNames(typeof(ColorName)).Length
+            * Enum.GetNames(typeof(ShapeType)).Length
+            * Enum.GetNames(typeof(GeometryType)).Length);
+
+        // 商はColorNameのインデックスになる。uint型のhashに対応するにはlongが必要
+        // remainder: 余り
+        long mainColorNameIndex = Math.DivRem(patterns1,
+            Enum.GetNames(typeof(ShapeType)).Length
+            * Enum.GetNames(typeof(GeometryType)).Length
+             , out long remainder);
+
+        // 商はShapeTypeのインデックスになる。余りはGeometryTypeのインデックスになる。
+        long mainShapeTypeIndex = Math.DivRem(remainder,
+            Enum.GetNames(typeof(GeometryType)).Length
+            , out long mainGeometryTypeIndex);
+
+        var mainColor = Colors.Dict[(ColorName)mainColorNameIndex];
+        var mainGeom = Geometry.Dict[AreaName.BgMain][(GeometryType)mainGeometryTypeIndex];
+
+        switch ((ShapeType)mainShapeTypeIndex)
+        {
+            case ShapeType.Circle:
+                AddCircle(HatchPatternType.Fill,
+                    mainColor,
+                    mainGeom.Radius * Width,
+                    mainGeom.CenterX * Width,
+                    mainGeom.CenterY * Width);
+                break;
+            case ShapeType.Diamond:
+                AddDiamond(HatchPatternType.Fill,
+                    mainColor,
+                    mainGeom.Radius * Width,
+                    mainGeom.CenterX * Width,
+                    mainGeom.CenterY * Width);
+                break;
+            case ShapeType.Pentagon:
+                AddPentagon(HatchPatternType.Fill,
+                    mainColor,
+                    mainGeom.Radius * Width,
+                    mainGeom.CenterX * Width,
+                    mainGeom.CenterY * Width);
+                break;
+            default:
+                break;
+        }
+
+        return this;
     }
 
     public IconBuilder AddCircle(HatchPatternType hType, Color col, float radius, float centerX, float centerY)
     {
         // パターンを利用するにはSVGドキュメントへ追加する必要があるので注意
         // switch式。便利。
-        var pattern = hType switch
-        {
-            HatchPatternType.DownwardDiagonal => HatchPattern.DownwardDiagonalPattern(col),
-            HatchPatternType.UpwardDiagonal => HatchPattern.UpwardDiagonalPattern(col),
-            HatchPatternType.Horizontal => HatchPattern.HorizontalPattern(col),
-            HatchPatternType.Vertical => HatchPattern.VerticalPattern(col),
-            HatchPatternType.Cross => HatchPattern.CrossPattern(col),
-            HatchPatternType.DiagonalCross => HatchPattern.DiagonalCrossPattern(col),
-            _ => new SvgPatternServer()
-        };
-        if (hType != HatchPatternType.None)
+        var pattern = HatchPattern.GetSvgPatternServer(hType, col);
+        if (hType != HatchPatternType.Fill)
             _svgDoc.Children.Add(pattern);
 
         _bgGroup.Children.Add(new SvgCircle
         {
-            Radius = radius,
-            CenterX = centerX,
-            CenterY = centerY,
-            Fill = hType != HatchPatternType.None ? pattern : new SvgColourServer(col),
+            Radius = (SvgUnit)radius,
+            CenterX = (SvgUnit)centerX,
+            CenterY = (SvgUnit)centerY,
+            Fill = hType != HatchPatternType.Fill ? pattern : new SvgColourServer(col),
         });
 
         return this;
     }
 
-    public IconBuilder addBackground(HatchPatternType type, Color col)
+    public IconBuilder AddDiamond(HatchPatternType hType, Color col, float radius, float centerX, float centerY)
     {
-        // パターンを利用するにはSVGドキュメントへ追加する必要がある
-        // switch式。便利。
-        var pattern = type switch
-        {
-            HatchPatternType.DownwardDiagonal => HatchPattern.DownwardDiagonalPattern(col),
-            HatchPatternType.UpwardDiagonal => HatchPattern.UpwardDiagonalPattern(col),
-            HatchPatternType.Horizontal => HatchPattern.HorizontalPattern(col),
-            HatchPatternType.Vertical => HatchPattern.VerticalPattern(col),
-            HatchPatternType.Cross => HatchPattern.CrossPattern(col),
-            HatchPatternType.DiagonalCross => HatchPattern.DiagonalCrossPattern(col),
-            _ => new SvgPatternServer()
-        };
-        if (type != HatchPatternType.None)
+        var pattern = HatchPattern.GetSvgPatternServer(hType, col);
+        if (hType != HatchPatternType.Fill)
             _svgDoc.Children.Add(pattern);
 
-
-        Random random = new Random();
-        var bgRadius = random.Next(Width / 3, Width * 3 / 7);
-        var centerX = (Width / 2 - bgRadius) / 2 - random.Next(0, (Width / 2 - bgRadius));
-        var centerY = (Height / 2 - bgRadius) / 2 - random.Next(0, (Height / 2 - bgRadius));
-        _bgGroup.Children.Add(new SvgCircle
+        _bgGroup.Children.Add(new SvgRectangle
         {
-            Radius = bgRadius,
-            CenterX = centerX,
-            CenterY = centerY,
-            // Fill = new SvgColourServer(GenerateRandomPastelColor()),
-            Fill = type != HatchPatternType.None ? pattern : new SvgColourServer(col),
-            // Stroke = new SvgColourServer(GenerateRandomPastelColor()),
-            // StrokeWidth = 7
+            Width = (SvgUnit)(radius * 1.4),
+            Height = (SvgUnit)(radius * 1.4),
+            X = (SvgUnit)centerX,
+            Y = (SvgUnit)centerY,
+            Fill = hType != HatchPatternType.Fill ? pattern : new SvgColourServer(col),
+            Transforms = [new SvgRotate(-45, centerX, centerY)]
+        });
+
+        return this;
+    }
+
+    public IconBuilder AddPentagon(HatchPatternType hType, Color col, float radius, float centerX, float centerY)
+    {
+        var pattern = HatchPattern.GetSvgPatternServer(hType, col);
+        if (hType != HatchPatternType.Fill)
+            _svgDoc.Children.Add(pattern);
+
+        _bgGroup.Children.Add(new SvgPolygon
+        {
+            Points = new SvgPointCollection
+            {
+                (SvgUnit)(centerX + radius * Math.Cos(0 * Math.PI / 5)), (SvgUnit)(centerY + radius * Math.Sin(0 * Math.PI / 5)),
+                (SvgUnit)(centerX + radius * Math.Cos(2 * Math.PI / 5)), (SvgUnit)(centerY + radius * Math.Sin(2 * Math.PI / 5)),
+                (SvgUnit)(centerX + radius * Math.Cos(4 * Math.PI / 5)), (SvgUnit)(centerY + radius * Math.Sin(4 * Math.PI / 5)),
+                (SvgUnit)(centerX + radius * Math.Cos(6 * Math.PI / 5)), (SvgUnit)(centerY + radius * Math.Sin(6 * Math.PI / 5)),
+                (SvgUnit)(centerX + radius * Math.Cos(8 * Math.PI / 5)), (SvgUnit)(centerY + radius * Math.Sin(8 * Math.PI / 5)),
+            },
+            Fill = hType != HatchPatternType.Fill ? pattern : new SvgColourServer(col),
         });
 
         return this;
@@ -221,7 +314,7 @@ new SvgClosePathSegment(false)
 
     public IconBuilder Default()
     {
-        addBackground(HatchPatternType.None, Color.FromArgb(255, 128, 128, 128));
+        AddCircle(HatchPatternType.Fill, Color.FromArgb(255, 128, 128, 128), Width / 2, Width / 2, Width / 2);
         addForeground();
         return this;
     }

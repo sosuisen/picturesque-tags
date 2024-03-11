@@ -28,31 +28,43 @@
 
     private void Generate()
     {
+        /*
         var cardList = new CardList();
         foreach (var card in cardList.List)
         {
             iconList.Add(GenerateIcon(card.Tags));
         }
-        /*
+        */
+        
         string[] tags = new string[] {
         "apple", "banana", "cherry", "date", "elderberry", "fig", "grape", "honeydew", "kiwi", "lemon", "mango", "nectarine",
         "orange", "pear", "quince", "raspberry", "strawberry", "tangerine", "ugli", "vanilla", "watermelon", "xigua", "yuzu",
         "zucchini"
         };
-        */
+        foreach (var tag in tags)
+        {
+            iconList.Add(GenerateIcon(tag));
+        }
+        
+    }
+
+    private string GenerateIcon(string tag)
+    {
+        var builder = new IconBuilder(width, height);
+        return builder.generateBgFromText(tag)
+        .addForeground()
+        .toSvg();
     }
 
     private string GenerateIcon(List<string> tags)
     {
-        var builder = new IconBuilder(width, height);
         if (tags.Count > 0)
         {
-            return builder.addBackground(HatchPattern.GenerateHatchPatternFromText(tags[0]))
-            .addForeground()
-            .toSvg();
+            return GenerateIcon(tags[0]);
         }
         else
         {
+            var builder = new IconBuilder(width, height);            
             return builder.Default().toSvg();
         }
     }

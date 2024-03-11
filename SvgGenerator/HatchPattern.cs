@@ -8,12 +8,18 @@ using Svg.Transforms;
 
 public enum HatchPatternType {
     DownwardDiagonal,
+    DownwardDiagonalReverse,
     UpwardDiagonal,
+    UpwardDiagonalThick,
     Horizontal,
     Vertical,
     Cross,
     DiagonalCross,
-    None,
+    Dots,
+    PolkaDots,
+    PolkaDotsReverse,
+    Checker,    
+    Fill,
 }
 
 public class HatchPattern
@@ -28,11 +34,31 @@ public class HatchPattern
             // ハッシュ値の先頭4バイトをintに変換
             hash = BitConverter.ToUInt32(hashBytes, 0);
         }
-        // 最後のNoneを除外するため-1
-        return (HatchPatternType)(hash % Enum.GetNames(typeof(HatchPatternType)).Length-1);
+        return (HatchPatternType)(hash % Enum.GetNames(typeof(HatchPatternType)).Length);
     }
 
-    public static SvgPatternServer DownwardDiagonalPattern(Color color)
+    public static SvgPatternServer GetSvgPatternServer(HatchPatternType type, Color color)
+    {
+        return type switch
+        {
+            HatchPatternType.DownwardDiagonal => DownwardDiagonalPattern(color),
+            HatchPatternType.DownwardDiagonalReverse => DownwardDiagonalReversePattern(color),
+            HatchPatternType.UpwardDiagonal => UpwardDiagonalPattern(color),
+            HatchPatternType.UpwardDiagonalThick => UpwardDiagonalThickPattern(color),
+            HatchPatternType.Horizontal => HorizontalPattern(color),
+            HatchPatternType.Vertical => VerticalPattern(color),
+            HatchPatternType.Cross => CrossPattern(color),
+            HatchPatternType.DiagonalCross => DiagonalCrossPattern(color),
+            HatchPatternType.Dots => DotsPattern(color),
+            HatchPatternType.PolkaDots => PolkaDotsPattern(color),
+            HatchPatternType.PolkaDotsReverse => PolkaDotsReversePattern(color),
+            HatchPatternType.Checker => CheckerPattern(color),
+            HatchPatternType.Fill => new SvgPatternServer(),
+            _ => new SvgPatternServer(),
+        };
+    }
+
+    private static SvgPatternServer DownwardDiagonalPattern(Color color)
     {
         // 左上から右下への斜線
         var pattern = new SvgPatternServer
@@ -72,6 +98,11 @@ public class HatchPattern
         return pattern;
     }
 
+    private static SvgPatternServer DownwardDiagonalReversePattern(Color color)
+    {
+        return new SvgPatternServer();
+    }
+
     public static SvgPatternServer UpwardDiagonalPattern(Color color)
     {
         // 左下から右上への斜線
@@ -96,6 +127,10 @@ public class HatchPattern
         pattern.PatternTransform = [new SvgRotate(45)];
 
         return pattern;
+    }
+
+    public static SvgPatternServer UpwardDiagonalThickPattern(Color color) {
+        return new SvgPatternServer();
     }
 
     public static SvgPatternServer HorizontalPattern(Color color)
@@ -218,4 +253,25 @@ public class HatchPattern
 
         return diagonalCrossPattern;
     }
+
+    private static SvgPatternServer DotsPattern(Color color)
+    {
+        return new SvgPatternServer();
+    }
+
+    private static SvgPatternServer PolkaDotsPattern(Color color)
+    {
+        return new SvgPatternServer();
+    }
+
+    private static SvgPatternServer PolkaDotsReversePattern(Color color)
+    {
+        return new SvgPatternServer();
+    }
+
+    private static SvgPatternServer CheckerPattern(Color color)
+    {
+        return new SvgPatternServer();
+    }
+
 }

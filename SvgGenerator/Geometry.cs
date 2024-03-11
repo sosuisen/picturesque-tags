@@ -2,6 +2,13 @@ using Svg.FilterEffects;
 
 namespace SvgGenerator;
 
+public enum ShapeType
+{
+    Circle,
+    Diamond,
+    Pentagon,
+}
+
 public enum GeometryType
 {
     LargeUpLeft,
@@ -18,7 +25,7 @@ public enum GeometryType
     SmallDownRight,
 }
 
-public class Geometry(double radius, double centerX, double centerY)
+public class Geometry
 {
     // BgMainDictは、BgMainの配置を決めるための辞書
     // BgMainの中心位置は、対角線方向にずれる。
@@ -84,16 +91,34 @@ public class Geometry(double radius, double centerX, double centerY)
 
     public Geometry Offset(double offsetX, double offsetY)
     {
+        return Offset((float)offsetX, (float)offsetY);
+    }
+
+    public Geometry Offset(float offsetX, float offsetY)
+    {
         CenterX += offsetX;
         CenterY += offsetY;
         return this;
     }
 
+    // SVGライブラリがdoubleではなくfloatなので、floatにしている。
+
     // 半径。アイコンの縦横サイズに対する倍数 0.1 - 1.0d 
     // 0.5dより大きい場合、はみ出るが、はみ出た部分は表示されない。
-    public double Radius { get; set; } = radius;
+    public float Radius { get; set; }
     // 中心からどれだけ離れているか。アイコンの縦横サイズに対する倍数 0.1 - 1.0d 
-    public double CenterX { get; set; } = centerX;
-    public double CenterY { get; set; } = centerY;
+    public float CenterX { get; set; }
+    public float CenterY { get; set; }
 
+    public Geometry(float radius, float centerX, float centerY) {
+        Radius = radius;
+        CenterX = centerX;
+        CenterY = centerY;
+    }
+
+    public Geometry(double radius, double centerX, double centerY) {
+        Radius = (float)radius;
+        CenterX = (float)centerX;
+        CenterY = (float)centerY;
+    }
 }
