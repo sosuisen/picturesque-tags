@@ -171,24 +171,27 @@ public class IconBuilder
         var mainColor = Colors.Dict[(ColorName)mainColorNameIndex];
         var mainGeom = Geometry.Dict[AreaName.BgMain][(GeometryType)mainGeometryTypeIndex];
 
+        // HatchPatternTypeの決定
+        var mainHatchPatternType = (HatchPatternType)(hash2 % (Enum.GetNames(typeof(HatchPatternType)).Length));
+
         switch ((ShapeType)mainShapeTypeIndex)
         {
             case ShapeType.Circle:
-                AddCircle(HatchPatternType.Fill,
+                AddCircle(mainHatchPatternType,
                     mainColor,
                     mainGeom.Radius * Width,
                     mainGeom.CenterX * Width,
                     mainGeom.CenterY * Width);
                 break;
             case ShapeType.Diamond:
-                AddDiamond(HatchPatternType.Fill,
+                AddDiamond(mainHatchPatternType,
                     mainColor,
                     mainGeom.Radius * Width,
                     mainGeom.CenterX * Width,
                     mainGeom.CenterY * Width);
                 break;
             case ShapeType.Pentagon:
-                AddPentagon(HatchPatternType.Fill,
+                AddPentagon(mainHatchPatternType,
                     mainColor,
                     mainGeom.Radius * Width,
                     mainGeom.CenterX * Width,
