@@ -113,19 +113,19 @@ public class IconBuilder
                 tmpStr = "";
                 charCount = 0;
             }
-            else if (block1 != "" && (charCount >= 3 || i == chars.Length - 1))
+            else if (block1 != "" && block2 == "" && (charCount >= 3 || i == chars.Length - 1))
             {
                 block2 = tmpStr;
                 tmpStr = "";
                 charCount = 0;
             }
-            else if (block2 != "" && (charCount >= 3 || i == chars.Length - 1))
+            else if (block2 != "" && block3 == "" && (charCount >= 3 || i == chars.Length - 1))
             {
                 block3 = tmpStr;
                 tmpStr = "";
                 charCount = 0;
             }
-            else if (block3 != "" && i == chars.Length - 1)
+            else if (block3 != "" && block4 == "" && i == chars.Length - 1)
             {
                 block4 = tmpStr;
                 tmpStr = "";
@@ -152,13 +152,13 @@ public class IconBuilder
         // hash1の値をもとに組に含まれる値を決定
         // hash1の値をColorName x ShapeType x GeometryTypeの組み合わせ数に丸める。
         // patterns1は0からColorName x ShapeType x GeometryType-1の値を取る
-        var patterns1 = hash1 % (Enum.GetNames(typeof(ColorName)).Length
+        var index1 = hash1 % (Enum.GetNames(typeof(ColorName)).Length
             * Enum.GetNames(typeof(ShapeType)).Length
             * Enum.GetNames(typeof(GeometryType)).Length);
 
         // 商はColorNameのインデックスになる。uint型のhashに対応するにはlongが必要
         // remainder: 余り
-        long mainColorNameIndex = Math.DivRem(patterns1,
+        long mainColorNameIndex = Math.DivRem(index1,
             Enum.GetNames(typeof(ShapeType)).Length
             * Enum.GetNames(typeof(GeometryType)).Length
              , out long remainder);
@@ -172,7 +172,40 @@ public class IconBuilder
         var mainGeom = Geometry.Dict[AreaName.BgMain][(GeometryType)mainGeometryTypeIndex];
 
         // HatchPatternTypeの決定
-        var mainHatchPatternType = (HatchPatternType)(hash2 % Enum.GetNames(typeof(HatchPatternType)).Length);
+        var mainHatchPatternType = HatchPatternType.Fill;
+        if (block2 != "")
+            mainHatchPatternType = (HatchPatternType)(hash2 % Enum.GetNames(typeof(HatchPatternType)).Length);
+        
+        // サブシェイプ1
+        if (block3 != ""){
+            var index3 = hash3 % (Enum.GetNames(typeof(ColorName)).Length
+            * Enum.GetNames(typeof(GeometryType)).Length);
+            long sub1ColorNameIndex = Math.DivRem(index3,
+                Enum.GetNames(typeof(GeometryType)).Length,
+                 out long sub1GeometryTypeIndex);
+            var sub1Color = Colors.Dict[(ColorName)sub1ColorNameIndex];
+            var sub1Geom = Geometry.Dict[AreaName.BgSub1][(GeometryType)sub1GeometryTypeIndex];
+            AddCircle(HatchPatternType.Fill,
+                sub1Color,
+                sub1Geom.Radius * Width,
+                sub1Geom.CenterX * Width,
+                sub1Geom.CenterY * Width);
+        }
+
+        if(block4 != ""){
+            var index4 = hash4 % (Enum.GetNames(typeof(ColorName)).Length
+            * Enum.GetNames(typeof(GeometryType)).Length);
+            long sub2ColorNameIndex = Math.DivRem(index4,
+                Enum.GetNames(typeof(GeometryType)).Length,
+                 out long sub2GeometryTypeIndex);
+            var sub2Color = Colors.Dict[(ColorName)sub2ColorNameIndex];
+            var sub2Geom = Geometry.Dict[AreaName.BgSub2][(GeometryType)sub2GeometryTypeIndex];
+            AddCircle(HatchPatternType.Fill,
+                sub2Color,
+                sub2Geom.Radius * Width,
+                sub2Geom.CenterX * Width,
+                sub2Geom.CenterY * Width);
+        }
 
         switch ((ShapeType)mainShapeTypeIndex)
         {

@@ -23,19 +23,23 @@
 
 @code {
     private List<string> iconList = [];
+        /*
     private int width = 256;
     private int height = 256;
+*/
+    private int width = 128;
+    private int height = 128;
 
     private void Generate()
     {
-        /*
+        /*        
         var cardList = new CardList();
         foreach (var card in cardList.List)
         {
             iconList.Add(GenerateIcon(card.Tags));
         }
         */
-        
+
         string[] tags = new string[] {
         "apple", "banana", "cherry", "date", "elderberry", "fig", "grape", "honeydew", "kiwi", "lemon", "mango", "nectarine",
         "orange", "pear", "quince", "raspberry", "strawberry", "tangerine", "ugli", "vanilla", "watermelon", "xigua", "yuzu",
@@ -43,12 +47,11 @@
         "Avocado", "Blackberry", "Cantaloupe", "Dragonfruit", "Eggplant", "Figs", "Grapes", "Honeydew", "Iceberg", "Jicama",    
         "Kiwi", "Lemon", "Mango", "Nectarine", "Orange", "Peach", "Quince", "Raspberry", "Strawberry", "Tangerine", "Ugli", 
         "Vanilla", "Watermelon", "Xigua", "Yuzu", "Zucchini",
-        };
+        };        
         foreach (var tag in tags)
         {
             iconList.Add(GenerateIcon(tag));
         }
-        
     }
 
     private string GenerateIcon(string tag)
