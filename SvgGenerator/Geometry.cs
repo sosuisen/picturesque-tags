@@ -1,3 +1,5 @@
+using Svg.FilterEffects;
+
 namespace SvgGenerator;
 
 public enum GeometryType
@@ -20,50 +22,55 @@ public class Geometry(double radius, double centerX, double centerY)
 {
     // BgMainDictは、BgMainの配置を決めるための辞書
     // BgMainの中心位置は、対角線方向にずれる。
+    // 半径はUpLeftが最大、DownRightが最小
     public static Dictionary<AreaName, Dictionary<GeometryType, Geometry>> Dict { get; } = new() {
         { AreaName.BgMain, new() {
-                { GeometryType.LargeUpLeft, new Geometry(0.9, 0.2, 0.2) },
-                { GeometryType.LargeUpRight, new Geometry(0.8, 0.2, 0.2) },
-                { GeometryType.LargeDownLeft, new Geometry(0.7, 0.2, 0.2) },
-                { GeometryType.LargeDownRight, new Geometry(0.6, 0.2, 0.2) },
-                { GeometryType.MiddleUpLeft, new Geometry(0.46, -0.02, -0.02) },
-                { GeometryType.MiddleUpRight, new Geometry(0.44, 0.02, -0.02) },
-                { GeometryType.MiddleDownLeft, new Geometry(0.42, -0.02, 0.02) },
-                { GeometryType.MiddleDownRight, new Geometry(0.40, 0, 0.02) },
-                { GeometryType.SmallUpLeft, new Geometry(0.36, 0.1, 0.1) },
-                { GeometryType.SmallUpRight, new Geometry(0.34, 0.1, 0.1) },
-                { GeometryType.SmallDownLeft, new Geometry(0.32, 0.1, 0.1) },
+                { GeometryType.LargeUpLeft, new Geometry(0.9, -0.3, -0.3) },
+                { GeometryType.LargeUpRight, new Geometry(0.8, 0.3, -0.3) },
+                { GeometryType.LargeDownLeft, new Geometry(0.7, -0.3, 0.3) },
+                { GeometryType.LargeDownRight, new Geometry(0.6, 0.3, 0.3) },
+                { GeometryType.MiddleUpLeft, new Geometry(0.46, -0.2, -0.2) },
+                { GeometryType.MiddleUpRight, new Geometry(0.44, 0.2, -0.2) },
+                { GeometryType.MiddleDownLeft, new Geometry(0.42, -0.2, 0.2) },
+                { GeometryType.MiddleDownRight, new Geometry(0.40, 0.2, 0.2) },
+                { GeometryType.SmallUpLeft, new Geometry(0.36, -0.1, -0.1) },
+                { GeometryType.SmallUpRight, new Geometry(0.34, 0.1, -0.1) },
+                { GeometryType.SmallDownLeft, new Geometry(0.32, -0.1, 0.1) },
                 { GeometryType.SmallDownRight, new Geometry(0.30, 0.1, 0.1) },
             }
         },
+        // BgSub1の中心位置は、対角線方向から少し下にずれる。
+        // 半径はDownRightが最大、UpLeftが最小
         { AreaName.BgSub1, new(){
-                { GeometryType.LargeUpLeft, new Geometry(0.9, 0.2, 0.2) },
-                { GeometryType.LargeUpRight, new Geometry(0.8, 0.2, 0.2) },
-                { GeometryType.LargeDownLeft, new Geometry(0.7, 0.2, 0.2) },
-                { GeometryType.LargeDownRight, new Geometry(0.6, 0.2, 0.2) },
-                { GeometryType.MiddleUpLeft, new Geometry(0.46, -0.02, -0.02) },
-                { GeometryType.MiddleUpRight, new Geometry(0.44, 0.02, -0.02) },
-                { GeometryType.MiddleDownLeft, new Geometry(0.42, -0.02, 0.02) },
-                { GeometryType.MiddleDownRight, new Geometry(0.40, 0, 0.02) },
-                { GeometryType.SmallUpLeft, new Geometry(0.36, 0.1, 0.1) },
-                { GeometryType.SmallUpRight, new Geometry(0.34, 0.1, 0.1) },
-                { GeometryType.SmallDownLeft, new Geometry(0.32, 0.1, 0.1) },
-                { GeometryType.SmallDownRight, new Geometry(0.30, 0.1, 0.1) },
+                { GeometryType.LargeUpLeft, new Geometry(0.24, -0.25, -0.25).Offset(-0.1, -0.08) },
+                { GeometryType.LargeUpRight, new Geometry(0.26, 0.25, -0.25).Offset(0.1, -0.08) },
+                { GeometryType.LargeDownLeft, new Geometry(0.28, -0.25, 0.25).Offset(-0.1, 0.12) },
+                { GeometryType.LargeDownRight, new Geometry(0.3, 0.25, 0.25).Offset(0.1, 0.12) },
+                { GeometryType.MiddleUpLeft, new Geometry(0.16, -0.25, -0.25).Offset(-0.1, -0.08) },
+                { GeometryType.MiddleUpRight, new Geometry(0.18, 0.25, -0.25).Offset(0.1, -0.08) },
+                { GeometryType.MiddleDownLeft, new Geometry(0.20, -0.25, 0.25).Offset(-0.1, 0.12) },
+                { GeometryType.MiddleDownRight, new Geometry(0.22, 0.25, 0.25).Offset(0.1, 0.12) },
+                { GeometryType.SmallUpLeft, new Geometry(0.06, -0.25, -0.25).Offset(-0.1, -0.08) },
+                { GeometryType.SmallUpRight, new Geometry(0.08, 0.25, -0.25).Offset(0.1, -0.08) },
+                { GeometryType.SmallDownLeft, new Geometry(0.10, -0.25, 0.25).Offset(-0.1, 0.12) },
+                { GeometryType.SmallDownRight, new Geometry(0.12, 0.25, 0.25).Offset(0.1, 0.12) },
             }
         },
+        // BgSub1の中心位置は、対角線方向から少し下にずれる。
+        // 半径はがUpLeft最大、DownRightが最小
         { AreaName.BgSub2, new(){
-                { GeometryType.LargeUpLeft, new Geometry(0.9, 0.2, 0.2) },
-                { GeometryType.LargeUpRight, new Geometry(0.8, 0.2, 0.2) },
-                { GeometryType.LargeDownLeft, new Geometry(0.7, 0.2, 0.2) },
-                { GeometryType.LargeDownRight, new Geometry(0.6, 0.2, 0.2) },
-                { GeometryType.MiddleUpLeft, new Geometry(0.46, -0.02, -0.02) },
-                { GeometryType.MiddleUpRight, new Geometry(0.44, 0.02, -0.02) },
-                { GeometryType.MiddleDownLeft, new Geometry(0.42, -0.02, 0.02) },
-                { GeometryType.MiddleDownRight, new Geometry(0.40, 0, 0.02) },
-                { GeometryType.SmallUpLeft, new Geometry(0.36, 0.1, 0.1) },
-                { GeometryType.SmallUpRight, new Geometry(0.34, 0.1, 0.1) },
-                { GeometryType.SmallDownLeft, new Geometry(0.32, 0.1, 0.1) },
-                { GeometryType.SmallDownRight, new Geometry(0.30, 0.1, 0.1) },
+                { GeometryType.LargeUpLeft, new Geometry(0.3, -0.25, -0.25).Offset(-0.1, -0.12) },
+                { GeometryType.LargeUpRight, new Geometry(0.28, 0.25, -0.25).Offset(0.1, -0.12) },
+                { GeometryType.LargeDownLeft, new Geometry(0.26, -0.25, 0.25).Offset(-0.1, 0.08) },
+                { GeometryType.LargeDownRight, new Geometry(0.24, 0.25, 0.25).Offset(0.1, 0.08) },
+                { GeometryType.MiddleUpLeft, new Geometry(0.22, -0.25, -0.25).Offset(-0.1, -0.12) },
+                { GeometryType.MiddleUpRight, new Geometry(0.20, 0.25, -0.25).Offset(0.1, -0.12) },
+                { GeometryType.MiddleDownLeft, new Geometry(0.18, -0.25, 0.25).Offset(-0.1, 0.08) },
+                { GeometryType.MiddleDownRight, new Geometry(0.16, 0.25, 0.25).Offset(0.1, 0.08) },
+                { GeometryType.SmallUpLeft, new Geometry(0.12, -0.25, -0.25).Offset(-0.1, -0.08) },
+                { GeometryType.SmallUpRight, new Geometry(0.10, 0.25, -0.25).Offset(0.1, -0.08) },
+                { GeometryType.SmallDownLeft, new Geometry(0.08, -0.25, 0.25).Offset(-0.1, 0.08) },
+                { GeometryType.SmallDownRight, new Geometry(0.06, 0.25, 0.25).Offset(0.1, 0.08) },
             }
         },
     };
@@ -75,11 +82,18 @@ public class Geometry(double radius, double centerX, double centerY)
         return Dict[areaName][type];
     }
 
+    public Geometry Offset(double offsetX, double offsetY)
+    {
+        CenterX += offsetX;
+        CenterY += offsetY;
+        return this;
+    }
+
     // 半径。アイコンの縦横サイズに対する倍数 0.1 - 1.0d 
     // 0.5dより大きい場合、はみ出るが、はみ出た部分は表示されない。
-    public double Radius { get; } = radius;
+    public double Radius { get; set; } = radius;
     // 中心からどれだけ離れているか。アイコンの縦横サイズに対する倍数 0.1 - 1.0d 
-    public double CenterX { get; } = centerX;
-    public double CenterY { get; } = centerY;
+    public double CenterX { get; set; } = centerX;
+    public double CenterY { get; set; } = centerY;
 
 }
