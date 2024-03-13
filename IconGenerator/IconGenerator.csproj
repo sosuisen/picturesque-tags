@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SvgGenerator\SvgGenerator.csproj" />
+    <ProjectReference Include="../PicturesqueTags/PicturesqueTags.csproj" />
   </ItemGroup>
 
 </Project>

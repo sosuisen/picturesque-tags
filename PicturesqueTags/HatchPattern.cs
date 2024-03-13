@@ -1,4 +1,4 @@
-﻿namespace SvgGenerator;
+﻿namespace PicturesqueTags;
 
 using System.Drawing;
 using System.Security.Cryptography;

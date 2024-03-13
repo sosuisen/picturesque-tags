@@ -1,4 +1,4 @@
-namespace SvgGenerator;
+namespace PicturesqueTags;
 
 using System.Drawing;
 using System.Security.Cryptography;
@@ -22,17 +22,17 @@ public enum ColorName
 public class Colors
 {
     public static Dictionary<ColorName, Color> Dict { get; } = new() {
-            { SvgGenerator.ColorName.Orange,
+            { PicturesqueTags.ColorName.Orange,
                 ColorTranslator.FromHtml("#EBAE9B") },
-            { SvgGenerator.ColorName.Blue,
+            { PicturesqueTags.ColorName.Blue,
                 ColorTranslator.FromHtml("#9BA9EB") },
-            { SvgGenerator.ColorName.Green,
+            { PicturesqueTags.ColorName.Green,
                 ColorTranslator.FromHtml("#C0EB9B") },
-            { SvgGenerator.ColorName.Pink,
+            { PicturesqueTags.ColorName.Pink,
                 ColorTranslator.FromHtml("#EB9BB6") },
-            { SvgGenerator.ColorName.Cyan,
+            { PicturesqueTags.ColorName.Cyan,
                 ColorTranslator.FromHtml("#9BDAEB") },
-            { SvgGenerator.ColorName.Yellow,
+            { PicturesqueTags.ColorName.Yellow,
                 ColorTranslator.FromHtml("#EBE49A") },
         };
 }

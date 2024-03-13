@@ -1,4 +1,4 @@
-namespace SvgGenerator;
+namespace PicturesqueTags;
 
 public enum AreaName {
     BgMain,

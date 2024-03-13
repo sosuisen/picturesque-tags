@@ -1,6 +1,6 @@
 using Svg.FilterEffects;
 
-namespace SvgGenerator;
+namespace PicturesqueTags;
 
 public enum ShapeType
 {

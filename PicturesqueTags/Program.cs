@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices.JavaScript;
 
-namespace SvgGenerator;
+namespace PicturesqueTags;
 
 public partial class Program
 {

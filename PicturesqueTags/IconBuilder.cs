@@ -1,4 +1,4 @@
-﻿namespace SvgGenerator;
+﻿namespace PicturesqueTags;
 
 using Svg;
 using Svg.Pathing;
