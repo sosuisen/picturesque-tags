@@ -1,0 +1,29 @@
+@page "/cardbox"
+
+<PageTitle>PicturesqueTags</PageTitle>
+
+<h1>PicturesqueTags</h1>
+
+<div style="margin-top:10px;">
+    @foreach (var icon in iconList)
+    {
+        <div style="width: @(width)px; height: @(height)px; float: left; ">
+            @((MarkupString)icon)
+        </div>
+    }
+</div>
+
+@code {
+    private List<string> iconList = [];
+    private int width = 256;
+    private int height = 256;
+
+    protected override void OnInitialized()
+    {
+        var cardList = new CardList();
+        foreach (var card in cardList.List)
+        {
+            iconList.Add(Generator.GenerateIcon(width, height, card.Tags));
+        }
+    }
+}

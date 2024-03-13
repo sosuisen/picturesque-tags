@@ -1,7 +1,37 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>PicturesqueTags</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>PicturesqueTags</h1>
 
-Welcome to your new app.
+<div style="margin-top:10px;">
+    @foreach (var icon in iconList)
+    {
+        <div style="width: @(width)px; height: @(height)px; float: left; ">
+            @((MarkupString)icon)
+        </div>
+    }
+</div>
+
+@code {
+    private List<string> iconList = [];
+    private int width = 128;
+    private int height = 128;
+
+    protected override void OnInitialized()
+    {
+        string[] tags = new string[] {
+"apple", "banana", "cherry", "date", "elderberry", "fig", "grape", "honeydew", "kiwi", "lemon", "mango", "nectarine",
+"orange", "pear", "quince", "raspberry", "strawberry", "tangerine", "ugli", "vanilla", "watermelon", "xigua", "yuzu",
+"zucchini",
+"Avocado", "Blackberry", "Cantaloupe", "Dragonfruit", "Eggplant", "Figs", "Grapes", "Honeydew", "Iceberg", "Jicama",
+"Kiwi", "Lemon", "Mango", "Nectarine", "Orange", "Peach", "Quince", "Raspberry", "Strawberry", "Tangerine", "Ugli",
+"Vanilla", "Watermelon", "Xigua", "Yuzu", "Zucchini",
+};
+        foreach (var tag in tags)
+        {
+            iconList.Add(Generator.GenerateIcon(width, height, tag));
+        }
+    }
+
+}
