@@ -135,15 +135,17 @@ public class IconBuilder
                 charCount = 0;
             }
         }
-
+        // GetHashCodeは.NET以外の環境と互換性がないため使わない
+        // var hash = str.GetHashCode();
+        // MD5はbrowser-wasmランタイムへの書き出しに対応していないためSHA1で。
         uint hash1, hash2, hash3, hash4;
-        using (MD5 md5 = MD5.Create())
+        using (SHA1 hashAlgorithm = SHA1.Create())
         {
-            byte[] hashBytes1 = md5.ComputeHash(Encoding.UTF8.GetBytes(block1));
-            byte[] hashBytes2 = md5.ComputeHash(Encoding.UTF8.GetBytes(block2));
-            byte[] hashBytes3 = md5.ComputeHash(Encoding.UTF8.GetBytes(block3));
-            byte[] hashBytes4 = md5.ComputeHash(Encoding.UTF8.GetBytes(block4));
-            // 16バイトのハッシュ値の先頭4バイトをuintに変換
+            byte[] hashBytes1 = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(block1));
+            byte[] hashBytes2 = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(block2));
+            byte[] hashBytes3 = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(block3));
+            byte[] hashBytes4 = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(block4));
+            // ハッシュ値の先頭4バイトをuintに変換
             hash1 = BitConverter.ToUInt32(hashBytes1, 0);
             hash2 = BitConverter.ToUInt32(hashBytes2, 0);
             hash3 = BitConverter.ToUInt32(hashBytes3, 0);

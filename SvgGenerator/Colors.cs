@@ -21,26 +21,6 @@ public enum ColorName
 
 public class Colors
 {
-    public static Color GenerateColorFromText(string txt)
-    {
-        uint hash = 0;
-        // GetHashCodeは.NET以外の環境と互換性がないため使わない
-        // var hash = str.GetHashCode();
-        using (MD5 md5 = MD5.Create())
-        {
-            byte[] hashBytes = md5.ComputeHash(Encoding.UTF8.GetBytes(txt));
-            // 16バイトのハッシュ値の先頭4バイトをintに変換
-            hash = BitConverter.ToUInt32(hashBytes, 0);
-        }
-        var name = (ColorName)(hash % Enum.GetNames(typeof(ColorName)).Length);
-        return Dict[name];
-    }
-
-    public static Color GenerateColorFromHash(uint hash) {
-        var name = (ColorName)(hash % Enum.GetNames(typeof(ColorName)).Length);
-        return Dict[name];
-    }
-
     public static Dictionary<ColorName, Color> Dict { get; } = new() {
             { SvgGenerator.ColorName.Orange,
                 ColorTranslator.FromHtml("#EBAE9B") },

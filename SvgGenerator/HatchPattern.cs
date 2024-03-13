@@ -23,19 +23,6 @@ public enum HatchPatternType {
 
 public class HatchPattern
 {    
-    public static HatchPatternType GenerateHatchPatternFromText(string txt){
-        uint hash = 0;
-        // GetHashCodeは.NET以外の環境と互換性がないため使わない
-        // var hash = str.GetHashCode();
-        using (MD5 md5 = MD5.Create())
-        {
-            byte[] hashBytes = md5.ComputeHash(Encoding.UTF8.GetBytes(txt));
-            // ハッシュ値の先頭4バイトをintに変換
-            hash = BitConverter.ToUInt32(hashBytes, 0);
-        }
-        return (HatchPatternType)(hash % Enum.GetNames(typeof(HatchPatternType)).Length);
-    }
-
     public static SvgPatternServer GetSvgPatternServer(HatchPatternType type, Color color)
     {
         return type switch
