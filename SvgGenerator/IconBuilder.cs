@@ -66,8 +66,10 @@ public class IconBuilder
         }
         // カタカナか判定
         else if (katakanaRanges.Any(range => c >= range.Item1 && c <= range.Item2))
-        {
+        {            
             return false;
+            // カタカナは元の英語よりも短い数で意味を表しがちなので true にしておくのもよさそう？
+            // return true;
         }
         // 漢字か判定
         else if (kanjiRanges.Any(range => c >= range.Item1 && c <= range.Item2))
@@ -107,7 +109,8 @@ public class IconBuilder
             }
             tmpStr += c;
 
-            if (block1 == "" && (charCount >= 4 || i == chars.Length - 1))
+            // if (block1 == "" && (charCount >= 4 || i == chars.Length - 1))
+            if (block1 == "" && (charCount >= 3 || i == chars.Length - 1))
             {
                 block1 = tmpStr;
                 tmpStr = "";
