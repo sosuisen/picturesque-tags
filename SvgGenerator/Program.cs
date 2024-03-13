@@ -4,7 +4,9 @@ namespace SvgGenerator;
 
 public partial class Program
 {
+    #if WASM
     [JSExport]
+    #endif
     internal static string GeneratePtag(string tag, int width, int height) {
         var builder = new IconBuilder(width, height);
         return builder.generateBgFromText(tag)
@@ -14,5 +16,7 @@ public partial class Program
 
     static void Main(string[] args)
     {
+        string svg = GeneratePtag("A", 100, 100);
+        Console.WriteLine(svg);
     }
 }

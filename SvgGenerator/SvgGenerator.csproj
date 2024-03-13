@@ -4,18 +4,28 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    
-    <!-- WASM -->
+
+    <!-- Wasmビルドのためのカスタムプロパティの定義 (デフォルト値はfalse) -->
+    <Wasm>false</Wasm>
+  </PropertyGroup>
+
+  <!-- 
+  WASM build
+  $ dotnet build -p:Wasm=true
+  または
+  $ dotnet publish -c Release  -p:Wasm=true
+  -->
+  <PropertyGroup Condition="'$(Wasm)' == 'true'">
+    <!-- #ifディレクティブで条件分岐するための定数WASMを追加 -->
+    <DefineConstants>$(DefineConstants);WASM</DefineConstants>
 
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <WasmMainJSPath>main.js</WasmMainJSPath>
-
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Svg" Version="3.4.7" />
   </ItemGroup>
-
 </Project>
