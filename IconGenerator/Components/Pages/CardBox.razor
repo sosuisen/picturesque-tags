@@ -23,7 +23,9 @@
         var cardList = new CardList();
         foreach (var card in cardList.List)
         {
-            iconList.Add(Generator.GenerateIcon(width, height, card.Tags));
+            var svg = Generator.GenerateIcon(width, height, card.Tags);
+            Console.WriteLine(svg);
+            iconList.Add(svg);
         }
     }
 }

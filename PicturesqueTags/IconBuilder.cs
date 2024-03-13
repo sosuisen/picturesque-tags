@@ -2,10 +2,10 @@
 
 using Svg;
 using Svg.Pathing;
-using Svg.Transforms;
 using System.Drawing;
 using System.Security.Cryptography;
 using System.Text;
+using System.Xml;
 
 public class IconBuilder
 {
@@ -365,11 +365,20 @@ new SvgClosePathSegment(false)
 
     public string toSvg()
     {
+        var xmlSettings = new System.Xml.XmlWriterSettings
+        {
+            OmitXmlDeclaration = true // XML 宣言を省略する
+        };
+
         var embeddedSvg = "";
         using (var stream = new MemoryStream())
         {
-            _svgDoc.Write(stream);
-            embeddedSvg = System.Text.Encoding.UTF8.GetString(stream.GetBuffer());
+            using (var writer = XmlWriter.Create(stream, xmlSettings))
+            {
+                _svgDoc.Write(writer);
+                writer.Flush();
+                embeddedSvg = System.Text.Encoding.UTF8.GetString(stream.GetBuffer());
+            }
         }
         return embeddedSvg;
     }
