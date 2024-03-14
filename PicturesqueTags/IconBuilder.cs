@@ -188,7 +188,7 @@ public class IconBuilder
             long sub1ColorNameIndex = Math.DivRem(index3,
                 Enum.GetNames(typeof(GeometryType)).Length,
                  out long sub1GeometryTypeIndex);
-            var sub1Color = Colors.Dict[(ColorName)sub1ColorNameIndex];
+            var sub1Color = Colors.ChangeBrightness(Colors.Dict[(ColorName)sub1ColorNameIndex], 0.9);
             var sub1Geom = Geometry.Dict[AreaName.BgSub1][(GeometryType)sub1GeometryTypeIndex];
             AddCircle(HatchPatternType.Fill,
                 sub1Color,
@@ -203,7 +203,7 @@ public class IconBuilder
             long sub2ColorNameIndex = Math.DivRem(index4,
                 Enum.GetNames(typeof(GeometryType)).Length,
                  out long sub2GeometryTypeIndex);
-            var sub2Color = Colors.Dict[(ColorName)sub2ColorNameIndex];
+            var sub2Color = Colors.ChangeBrightness(Colors.Dict[(ColorName)sub2ColorNameIndex], 1.1);
             var sub2Geom = Geometry.Dict[AreaName.BgSub2][(GeometryType)sub2GeometryTypeIndex];
             AddCircle(HatchPatternType.Fill,
                 sub2Color,
@@ -377,7 +377,7 @@ new SvgClosePathSegment(false)
             {
                 _svgDoc.Write(writer);
                 writer.Flush();
-                embeddedSvg = System.Text.Encoding.UTF8.GetString(stream.GetBuffer());
+                embeddedSvg = Encoding.UTF8.GetString(stream.GetBuffer());
             }
         }
         return embeddedSvg;
